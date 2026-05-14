@@ -1,26 +1,38 @@
 # Gerador de Propostas Roxinha ComproPay
 
-Aplicação estática para consultores comerciais gerarem PDF personalizado da proposta da Roxinha ComproPay usando os PDFs oficiais limpos como template.
+Aplicação estática para o time comercial gerar propostas personalizadas em PDF a partir dos layouts oficiais da Roxinha ComproPay.
+
+## Acesso
+
+- Usuário padrão: `comercial`
+- Senha padrão: `Roxinha@2026`
+
+Importante: esta proteção é uma trava de front-end para evitar acesso aberto em hospedagem estática. Não substitui autenticação com backend.
 
 ## Como usar
 
-Rode em uma hospedagem estática ou servidor local, preencha os dados do cliente, escolha o tipo de proposta e clique em **Gerar PDF**.
+Abra a aplicação, faça login, preencha todos os campos obrigatórios e clique em **Gerar proposta em PDF**.
 
-Em desenvolvimento local:
+Para rodar localmente:
 
 ```bash
 python -m http.server 5173
 ```
 
-Depois acesse `http://localhost:5173`.
+Depois acesse:
 
-## Regras implementadas
+```text
+http://127.0.0.1:5173
+```
 
-- Proposta D+1 usa `assets/modelo-d1.pdf`.
-- Proposta D+30 usa `assets/modelo-d30.pdf`.
-- A página de antecipação só existe no template D+30.
-- Cliente, média de faturamento, PIX, taxas e consultor entram direto no PDF oficial.
+## Estrutura
 
-## Hospedagem gratuita
+- `assets/pages/d1` contém as páginas oficiais da proposta D+1.
+- `assets/pages/d30` contém as páginas oficiais da proposta D+30.
+- `app.js` controla formulário, autenticação leve, prévia e geração do PDF.
+- `index.html` contém a tela de login e a interface do gerador.
+- `styles.css` concentra o visual da plataforma.
 
-Funciona em hospedagem estática gratuita, como GitHub Pages, Netlify ou Vercel. Para GitHub Pages, suba estes arquivos em um repositório público e ative **Settings > Pages > Deploy from branch**.
+## Publicação
+
+O repositório já inclui workflow para GitHub Pages em `.github/workflows/deploy-pages.yml`.
