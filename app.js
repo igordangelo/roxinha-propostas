@@ -41,6 +41,21 @@ const d30Examples = {
   other: ["1,60%", "3,09%", "3,39%", "3,69%", "3,99%"],
 };
 
+const d1Presets = {
+  under30: {
+    main: ["0,96%", "3,75%", "5,13%", "5,88%", "6,61%", "7,34%", "8,07%", "8,91%", "9,62%", "10,31%", "11,00%", "11,69%", "12,37%", "13,04%", "13,70%", "14,36%", "15,00%", "15,65%", "16,28%", "16,91%", "17,54%", "18,15%"],
+    other: ["1,60%", "4,61%", "5,46%", "6,20%", "6,94%", "7,67%", "8,39%", "9,28%", "9,98%", "10,68%", "11,37%", "12,05%", "12,72%", "13,39%", "14,05%", "14,70%", "15,35%", "15,99%", "16,62%", "17,25%", "17,87%", "18,48%"],
+  },
+  over40: {
+    main: ["0,81%", "3,45%", "4,83%", "5,58%", "6,31%", "7,04%", "7,77%", "8,61%", "9,32%", "10,01%", "10,70%", "11,39%", "12,07%", "13,04%", "13,70%", "14,36%", "15,00%", "15,65%", "16,28%", "16,91%", "17,54%", "18,15%"],
+    other: ["1,60%", "4,61%", "5,46%", "6,20%", "6,94%", "7,67%", "8,39%", "9,28%", "9,98%", "10,68%", "11,37%", "12,05%", "12,72%", "13,39%", "14,05%", "14,70%", "15,35%", "15,99%", "16,62%", "17,25%", "17,87%", "18,48%"],
+  },
+  exclusive: {
+    main: ["0,81%", "3,00%", "4,83%", "5,58%", "6,31%", "7,04%", "7,77%", "8,61%", "9,32%", "10,01%", "10,70%", "11,39%", "12,07%", "13,04%", "13,70%", "14,36%", "15,00%", "15,65%", "16,28%", "16,91%", "17,54%", "18,15%"],
+    other: ["1,60%", "4,61%", "5,46%", "6,20%", "6,94%", "7,67%", "8,39%", "9,28%", "9,98%", "10,68%", "11,37%", "12,05%", "12,72%", "13,39%", "14,05%", "14,70%", "15,35%", "15,99%", "16,62%", "17,25%", "17,87%", "18,48%"],
+  },
+};
+
 const authConfig = {
   sessionKey: "roxinha-authenticated",
   usernameHash: "cdf7e3fc7913e09bdccb30cca2a81a6f0c333d5e437a64bec108818e656e3bb7",
@@ -185,6 +200,8 @@ const form = document.querySelector("#proposalForm");
 const mainRates = document.querySelector("#mainRates");
 const otherRates = document.querySelector("#otherRates");
 const anticipationBlock = document.querySelector("#anticipationBlock");
+const d1PresetBar = document.querySelector("#d1PresetBar");
+const groupFillButtons = document.querySelectorAll("[data-group-fill-button]");
 const previewTitle = document.querySelector("#previewTitle");
 const previewTitleMobile = document.querySelector("#previewTitleMobile");
 const previewClient = document.querySelector("#previewClient");
@@ -279,10 +296,13 @@ function renderRates() {
   const labels = type === "d1" ? d1RateLabels : d30RateLabels;
   const anticipationInputs = anticipationBlock.querySelectorAll("input");
   const isD30 = type === "d30";
+  const isD1 = type === "d1";
 
   mainRates.replaceChildren(...labels.map((label, index) => makeRateInput("main", label, index)));
   otherRates.replaceChildren(...labels.map((label, index) => makeRateInput("other", label, index)));
   anticipationBlock.classList.toggle("hidden", !isD30);
+  d1PresetBar.classList.toggle("hidden", !isD1);
+  groupFillButtons.forEach((button) => button.classList.toggle("hidden", isD1));
   anticipationInputs.forEach((input) => {
     input.disabled = !isD30;
     input.required = isD30;
@@ -374,6 +394,20 @@ function fillExamples(group) {
     const input = form.elements[`${group}_${index}`];
     if (input) input.value = value;
   });
+  updatePreview();
+}
+
+function fillD1Preset(presetName) {
+  const preset = d1Presets[presetName];
+  if (!preset || getProposalType() !== "d1") return;
+
+  ["main", "other"].forEach((group) => {
+    preset[group].forEach((value, index) => {
+      const input = form.elements[`${group}_${index}`];
+      if (input) input.value = value;
+    });
+  });
+
   updatePreview();
 }
 
@@ -641,6 +675,10 @@ form.addEventListener("submit", (event) => {
 
 document.querySelectorAll("[data-fill-group]").forEach((button) => {
   button.addEventListener("click", () => fillExamples(button.dataset.fillGroup));
+});
+
+document.querySelectorAll("[data-fill-preset]").forEach((button) => {
+  button.addEventListener("click", () => fillD1Preset(button.dataset.fillPreset));
 });
 
 document.querySelector("#clearForm").addEventListener("click", () => {

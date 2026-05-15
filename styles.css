@@ -418,6 +418,17 @@ select:focus {
   padding-top: 6px;
 }
 
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 18px;
+}
+
+.preset-button {
+  min-height: 36px;
+}
+
 .rate-group-card + .rate-group-card {
   padding-top: 18px;
   border-top: 1px solid var(--line);
