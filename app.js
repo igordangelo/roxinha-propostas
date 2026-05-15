@@ -88,25 +88,28 @@ const pageSize = { width: 1920, height: 1080 };
 
 const assets = {
   d1: [
-    "assets/pages/d1/01-cover-clean.png",
-    "assets/pages/d1/02-page.png",
-    "assets/pages/d1/03-page.png",
-    "assets/pages/d1/04-page.png",
+    "assets/pages/d1/01-cover-clean.jpg",
+    "assets/pages/d1/02-page.jpg",
+    "assets/pages/d1/03-page.jpg",
+    "assets/pages/d1/04-page.jpg",
     "assets/pages/d1/05-rates-clean.png",
-    "assets/pages/d1/06-page.png",
-    "assets/pages/d1/07-contact-clean.png",
+    "assets/pages/d1/06-page.jpg",
+    "assets/pages/d1/07-contact-clean.jpg",
   ],
   d30: [
-    "assets/pages/d30/01-cover-clean.png",
-    "assets/pages/d30/02-page.png",
-    "assets/pages/d30/03-page.png",
-    "assets/pages/d30/04-page.png",
+    "assets/pages/d30/01-cover-clean.jpg",
+    "assets/pages/d30/02-page.jpg",
+    "assets/pages/d30/03-page.jpg",
+    "assets/pages/d30/04-page.jpg",
     "assets/pages/d30/05-rates-clean.png",
     "assets/pages/d30/06-anticipation-clean.png",
-    "assets/pages/d30/07-page.png",
-    "assets/pages/d30/08-contact-clean.png",
+    "assets/pages/d30/07-page.jpg",
+    "assets/pages/d30/08-contact-clean.jpg",
   ],
 };
+
+const byteCache = new Map();
+let resourceWarmupStarted = false;
 
 const boxes = {
   coverName: { x: 114, y: 924, width: 534, height: 37, font: "openSans700", align: "left", color: "white", maxSize: 68, minSize: 28, yOffset: -3 },
@@ -227,6 +230,7 @@ const actionNote = document.querySelector("#actionNote");
 function setAuthenticatedState(isAuthenticated) {
   loginShell.classList.toggle("hidden", isAuthenticated);
   appShell.classList.toggle("hidden", !isAuthenticated);
+  if (isAuthenticated) warmResourceCache();
 }
 
 async function sha256(value) {
@@ -524,11 +528,42 @@ function drawTextInBox(page, fonts, rgb, text, box) {
 }
 
 async function fetchBytes(path) {
+  if (byteCache.has(path)) return byteCache.get(path);
+
   const response = await fetch(path);
   if (!response.ok) {
     throw new Error(`Nao foi possivel carregar ${path}.`);
   }
-  return response.arrayBuffer();
+
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  byteCache.set(path, bytes);
+  return bytes;
+}
+
+async function embedImage(doc, path, bytes) {
+  const normalizedPath = path.toLowerCase();
+  if (normalizedPath.endsWith(".jpg") || normalizedPath.endsWith(".jpeg")) {
+    return doc.embedJpg(bytes);
+  }
+  return doc.embedPng(bytes);
+}
+
+function getResourcePaths() {
+  return [
+    "assets/fonts/Montserrat-500.ttf",
+    "assets/fonts/Montserrat-700.ttf",
+    "assets/fonts/Montserrat-800.ttf",
+    "assets/fonts/OpenSans-700.ttf",
+    "assets/fonts/IBMPlexSans-700.ttf",
+    ...assets.d1,
+    ...assets.d30,
+  ];
+}
+
+function warmResourceCache() {
+  if (resourceWarmupStarted) return;
+  resourceWarmupStarted = true;
+  Promise.allSettled(getResourcePaths().map((path) => fetchBytes(path))).catch(() => {});
 }
 
 async function loadFonts(doc) {
@@ -603,7 +638,7 @@ async function generatePdf(data) {
 
   const imagePaths = assets[data.type];
   const imageBytes = await Promise.all(imagePaths.map((path) => fetchBytes(path)));
-  const embeddedImages = await Promise.all(imageBytes.map((bytes) => doc.embedPng(bytes)));
+  const embeddedImages = await Promise.all(imageBytes.map((bytes, index) => embedImage(doc, imagePaths[index], bytes)));
 
   embeddedImages.forEach((image) => {
     const page = doc.addPage([pageSize.width, pageSize.height]);
