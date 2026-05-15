@@ -277,10 +277,17 @@ function makeRateInput(group, label, index) {
 function renderRates() {
   const type = getProposalType();
   const labels = type === "d1" ? d1RateLabels : d30RateLabels;
+  const anticipationInputs = anticipationBlock.querySelectorAll("input");
+  const isD30 = type === "d30";
 
   mainRates.replaceChildren(...labels.map((label, index) => makeRateInput("main", label, index)));
   otherRates.replaceChildren(...labels.map((label, index) => makeRateInput("other", label, index)));
-  anticipationBlock.classList.toggle("hidden", type !== "d30");
+  anticipationBlock.classList.toggle("hidden", !isD30);
+  anticipationInputs.forEach((input) => {
+    input.disabled = !isD30;
+    input.required = isD30;
+    if (!isD30) input.setCustomValidity("");
+  });
   updatePreview();
 }
 
@@ -367,6 +374,7 @@ function fillExamples(group) {
     const input = form.elements[`${group}_${index}`];
     if (input) input.value = value;
   });
+  updatePreview();
 }
 
 function digitsOnly(value) {
