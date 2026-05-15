@@ -312,7 +312,7 @@ function updatePreview() {
   previewCopy.textContent = pdfCopy;
   previewCopyMobile.textContent = pdfCopy;
   previewTypeChip.textContent = isD30 ? "D+30" : "D+1";
-  previewBilling.textContent = billingText === "Não informado" ? billingText : `${billingText}/mês`;
+  previewBilling.textContent = billingText;
   previewPix.textContent = pixText;
   previewConsultant.textContent = data.consultantName || "Não informado";
   previewPhone.textContent = data.consultantPhone || "-";
@@ -384,7 +384,7 @@ function digitsOnly(value) {
 function formatBillingAverage(value) {
   const digits = digitsOnly(value);
   if (!digits) return "";
-  return `R$ ${Number(digits).toLocaleString("pt-BR")} mil`;
+  return `R$ ${Number(digits).toLocaleString("pt-BR")}`;
 }
 
 function formatPercent(value) {
